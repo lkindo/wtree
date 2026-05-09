@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>겨울나무</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #1e293b;
+            --accent: #10b981;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --modal-bg: rgba(10, 15, 25, 0.98);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.2rem 5%;
+            position: sticky;
+            top: 0; z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .controls { display: flex; gap: 1rem; align-items: center; }
+
+        .search-container { width: 300px; position: relative; }
+        .search-container input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); opacity: 0.9; }
+
+        .container {
+            max-width: 1600px;
+            margin: 3rem auto;
+            padding: 0 5%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--glass-border);
+            position: relative;
+        }
+        .card:hover { transform: translateY(-15px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .card-img-wrapper { width: 100%; aspect-ratio: 1/1.2; overflow: hidden; background: #000; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s; }
+        .card:hover .card-img { transform: scale(1.05); }
+        .card-content { padding: 1.5rem; }
+        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+        .card-category { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background: #111827;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        .modal-close {
+            position: fixed;
+            top: 1.5rem; right: 1.5rem;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 5000;
+            font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .modal-close:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .modal-image-section { width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; position: relative; }
+        .modal-main-img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-badge {
+            position: absolute;
+            top: 2rem; left: 2rem;
+            background: var(--accent);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 10;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .modal-info-section { flex: 0.8; padding: 4rem 3rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem; }
+        
+        .modal-title { font-size: 2.5rem; font-weight: 800; line-height: 1.2; }
+        .modal-category { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+        .modal-desc { color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; }
+
+        .zoom-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            display: none;
+            z-index: 100;
+            cursor: grab;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .zoom-overlay:active { cursor: grabbing; }
+        .zoom-overlay.active { display: block; }
+        .zoomed-image { 
+            position: absolute;
+            width: 100%; 
+            height: 100%;
+            object-fit: contain;
+            transform-origin: center;
+            transition: transform 0.1s;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        @media (max-width: 1000px) {
+            .modal-content { height: 95vh; }
+            .modal-image-section { height: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header style="flex-direction: column; padding: 3rem 5% 2rem; height: auto; align-items: center;">
+        <div class="controls" style="flex-direction: column; width: 100%; max-width: 500px; align-items: center; gap: 0.5rem;">
+            <label for="search" id="flower-btn" style="
+                cursor: pointer; 
+                padding: 0.4rem 1.2rem; 
+                background: rgba(16, 185, 129, 0.1); 
+                border: 1px solid rgba(16, 185, 129, 0.3); 
+                border-radius: 100px; 
+                color: var(--accent); 
+                font-size: 0.9rem; 
+                font-weight: 700; 
+                margin-bottom: 0.8rem; 
+                transition: all 0.3s;
+                backdrop-filter: blur(5px);
+                letter-spacing: 0.5px;">
+                겨울나무
+            </label>
+            <div class="search-container" style="width: 100%;">
+                <input type="text" id="search" placeholder="나무 이름을 검색하세요..." style="
+                    width: 100%; 
+                    text-align: center; 
+                    padding: 1.2rem; 
+                    font-size: 1.1rem; 
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    border-radius: 15px;
+                    color: white;
+                ">
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="grid"></div>
+
+    <div class="modal" id="modal">
+        <button class="modal-close" id="close-modal">×</button>
+        <div class="modal-content">
+            <div class="modal-image-section" id="img-wrapper">
+                <div class="modal-badge" id="modal-badge">겨울나무</div>
+                <img src="" alt="" class="modal-main-img" id="modal-img">
+                <div class="zoom-overlay" id="zoom-overlay">
+                    <img src="" alt="" class="zoomed-image" id="zoomed-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const speciesData = [{"name": "은행나무", "category": "겨울나무", "images": ["assets/wtrees/은행나무.jpg"]}, {"name": "일본잎갈나무", "category": "겨울나무", "images": ["assets/wtrees/일본잎갈나무.jpg"]}, {"name": "메타세쿼이아", "category": "겨울나무", "images": ["assets/wtrees/메타세쿼이아.jpg"]}, {"name": "낙우송", "category": "겨울나무", "images": ["assets/wtrees/낙우송.jpg"]}, {"name": "목련", "category": "겨울나무", "images": ["assets/wtrees/목련.jpg"]}, {"name": "백목련", "category": "겨울나무", "images": ["assets/wtrees/백목련.jpg"]}, {"name": "함박꽃나무", "category": "겨울나무", "images": ["assets/wtrees/함박꽃나무.jpg"]}, {"name": "일본목련", "category": "겨울나무", "images": ["assets/wtrees/일본목련.jpg"]}, {"name": "튤립나무", "category": "겨울나무", "images": ["assets/wtrees/튤립나무.jpg"]}, {"name": "생강나무", "category": "겨울나무", "images": ["assets/wtrees/생강나무.jpg"]}, {"name": "비목나무", "category": "겨울나무", "images": ["assets/wtrees/비목나무.jpg"]}, {"name": "털조장나무", "category": "겨울나무", "images": ["assets/wtrees/털조장나무.jpg"]}, {"name": "감태나무", "category": "겨울나무", "images": ["assets/wtrees/감태나무.jpg"]}, {"name": "뇌성목", "category": "겨울나무", "images": ["assets/wtrees/뇌성목.jpg"]}, {"name": "등칡", "category": "겨울나무", "images": ["assets/wtrees/등칡.jpg"]}, {"name": "오미자", "category": "겨울나무", "images": ["assets/wtrees/오미자.jpg"]}, {"name": "남오미자", "category": "겨울나무", "images": ["assets/wtrees/남오미자.jpg"]}, {"name": "자주조희풀", "category": "겨울나무", "images": ["assets/wtrees/자주조희풀.jpg"]}, {"name": "사위질빵", "category": "겨울나무", "images": ["assets/wtrees/사위질빵.jpg"]}, {"name": "할미밀망", "category": "겨울나무", "images": ["assets/wtrees/할미밀망.jpg"]}, {"name": "매자나무", "category": "겨울나무", "images": ["assets/wtrees/매자나무.jpg"]}, {"name": "매발톱나무", "category": "겨울나무", "images": ["assets/wtrees/매발톱나무.jpg"]}, {"name": "일본매자나무", "category": "겨울나무", "images": ["assets/wtrees/일본매자나무.jpg"]}, {"name": "으름덩굴", "category": "겨울나무", "images": ["assets/wtrees/으름덩굴.jpg"]}, {"name": "댕댕이덩굴", "category": "겨울나무", "images": ["assets/wtrees/댕댕이덩굴.jpg"]}, {"name": "새모래덩굴", "category": "겨울나무", "images": ["assets/wtrees/새모래덩굴.jpg"]}, {"name": "나도밤나무", "category": "겨울나무", "images": ["assets/wtrees/나도밤나무.jpg"]}, {"name": "합다리나무", "category": "겨울나무", "images": ["assets/wtrees/합다리나무.jpg"]}, {"name": "계수나무", "category": "겨울나무", "images": ["assets/wtrees/계수나무.jpg"]}, {"name": "양버즘나무", "category": "겨울나무", "images": ["assets/wtrees/양버즘나무.jpg"]}, {"name": "히어리", "category": "겨울나무", "images": ["assets/wtrees/히어리.jpg"]}, {"name": "두충", "category": "겨울나무", "images": ["assets/wtrees/두충.jpg"]}, {"name": "느릅나무", "category": "겨울나무", "images": ["assets/wtrees/느릅나무.jpg"]}, {"name": "미국느릅나무", "category": "겨울나무", "images": ["assets/wtrees/미국느릅나무.jpg"]}, {"name": "왕느릅나무", "category": "겨울나무", "images": ["assets/wtrees/왕느릅나무.jpg"]}, {"name": "비술나무", "category": "겨울나무", "images": ["assets/wtrees/비술나무.jpg"]}, {"name": "난티나무", "category": "겨울나무", "images": ["assets/wtrees/난티나무.jpg"]}, {"name": "참느릅나무", "category": "겨울나무", "images": ["assets/wtrees/참느릅나무.jpg"]}, {"name": "시무나무", "category": "겨울나무", "images": ["assets/wtrees/시무나무.jpg"]}, {"name": "느티나무", "category": "겨울나무", "images": ["assets/wtrees/느티나무.jpg"]}, {"name": "팽나무", "category": "겨울나무", "images": ["assets/wtrees/팽나무.jpg"]}, {"name": "풍게나무", "category": "겨울나무", "images": ["assets/wtrees/풍게나무.jpg"]}, {"name": "왕팽나무", "category": "겨울나무", "images": ["assets/wtrees/왕팽나무.jpg"]}, {"name": "폭나무", "category": "겨울나무", "images": ["assets/wtrees/폭나무.jpg"]}, {"name": "푸조나무", "category": "겨울나무", "images": ["assets/wtrees/푸조나무.jpg"]}, {"name": "꾸지뽕나무", "category": "겨울나무", "images": ["assets/wtrees/꾸지뽕나무.jpg"]}, {"name": "뽕나무", "category": "겨울나무", "images": ["assets/wtrees/뽕나무.jpg"]}, {"name": "산뽕나무", "category": "겨울나무", "images": ["assets/wtrees/산뽕나무.jpg"]}, {"name": "돌뽕나무", "category": "겨울나무", "images": ["assets/wtrees/돌뽕나무.jpg"]}, {"name": "몽고뽕나무", "category": "겨울나무", "images": ["assets/wtrees/몽고뽕나무.jpg"]}, {"name": "꾸지나무", "category": "겨울나무", "images": ["assets/wtrees/꾸지나무.jpg"]}, {"name": "천선과나무", "category": "겨울나무", "images": ["assets/wtrees/천선과나무.jpg"]}, {"name": "좀깨잎나무", "category": "겨울나무", "images": ["assets/wtrees/좀깨잎나무.jpg"]}, {"name": "가래나무", "category": "겨울나무", "images": ["assets/wtrees/가래나무.jpg"]}, {"name": "호두나무", "category": "겨울나무", "images": ["assets/wtrees/호두나무.jpg"]}, {"name": "굴피나무", "category": "겨울나무", "images": ["assets/wtrees/굴피나무.jpg"]}, {"name": "중국굴피나무", "category": "겨울나무", "images": ["assets/wtrees/중국굴피나무.jpg"]}, {"name": "너도밤나무", "category": "겨울나무", "images": ["assets/wtrees/너도밤나무.jpg"]}, {"name": "밤나무", "category": "겨울나무", "images": ["assets/wtrees/밤나무.jpg"]}, {"name": "상수리나무", "category": "겨울나무", "images": ["assets/wtrees/상수리나무.jpg"]}, {"name": "굴참나무", "category": "겨울나무", "images": ["assets/wtrees/굴참나무.jpg"]}, {"name": "갈참나무", "category": "겨울나무", "images": ["assets/wtrees/갈참나무.jpg"]}, {"name": "졸참나무", "category": "겨울나무", "images": ["assets/wtrees/졸참나무.jpg"]}, {"name": "신갈나무", "category": "겨울나무", "images": ["assets/wtrees/신갈나무.jpg"]}, {"name": "떡갈나무", "category": "겨울나무", "images": ["assets/wtrees/떡갈나무.jpg"]}, {"name": "대왕참나무", "category": "겨울나무", "images": ["assets/wtrees/대왕참나무.jpg"]}, {"name": "오리나무", "category": "겨울나무", "images": ["assets/wtrees/오리나무.jpg"]}, {"name": "물오리나무", "category": "겨울나무", "images": ["assets/wtrees/물오리나무.jpg"]}, {"name": "덤불오리나무", "category": "겨울나무", "images": ["assets/wtrees/덤불오리나무.jpg"]}, {"name": "사방오리", "category": "겨울나무", "images": ["assets/wtrees/사방오리.jpg"]}, {"name": "자작나무", "category": "겨울나무", "images": ["assets/wtrees/자작나무.jpg"]}, {"name": "거제수나무", "category": "겨울나무", "images": ["assets/wtrees/거제수나무.jpg"]}, {"name": "사스레나무", "category": "겨울나무", "images": ["assets/wtrees/사스레나무.jpg"]}, {"name": "박달나무", "category": "겨울나무", "images": ["assets/wtrees/박달나무.jpg"]}, {"name": "개발달나무", "category": "겨울나무", "images": ["assets/wtrees/개발달나무.jpg"]}, {"name": "물박달나무", "category": "겨울나무", "images": ["assets/wtrees/물박달나무.jpg"]}, {"name": "개암나무", "category": "겨울나무", "images": ["assets/wtrees/개암나무.jpg"]}, {"name": "참개암나무", "category": "겨울나무", "images": ["assets/wtrees/참개암나무.jpg"]}, {"name": "까치박달", "category": "겨울나무", "images": ["assets/wtrees/까치박달.jpg"]}, {"name": "서어나무", "category": "겨울나무", "images": ["assets/wtrees/서어나무.jpg"]}, {"name": "개서어나무", "category": "겨울나무", "images": ["assets/wtrees/개서어나무.jpg"]}, {"name": "소사나무", "category": "겨울나무", "images": ["assets/wtrees/소사나무.jpg"]}, {"name": "새우나무", "category": "겨울나무", "images": ["assets/wtrees/새우나무.jpg"]}, {"name": "노각나무", "category": "겨울나무", "images": ["assets/wtrees/노각나무.jpg"]}, {"name": "다래", "category": "겨울나무", "images": ["assets/wtrees/다래.jpg"]}, {"name": "쥐다래", "category": "겨울나무", "images": ["assets/wtrees/쥐다래.jpg"]}, {"name": "개다래", "category": "겨울나무", "images": ["assets/wtrees/개다래.jpg"]}, {"name": "섬다래", "category": "겨울나무", "images": ["assets/wtrees/섬다래.jpg"]}, {"name": "보리자나무", "category": "겨울나무", "images": ["assets/wtrees/보리자나무.jpg"]}, {"name": "찰피나무", "category": "겨울나무", "images": ["assets/wtrees/찰피나무.jpg"]}, {"name": "피나무", "category": "겨울나무", "images": ["assets/wtrees/피나무.jpg"]}, {"name": "장구밤나무", "category": "겨울나무", "images": ["assets/wtrees/장구밤나무.jpg"]}, {"name": "벽오동", "category": "겨울나무", "images": ["assets/wtrees/벽오동.jpg"]}, {"name": "황근", "category": "겨울나무", "images": ["assets/wtrees/황근.jpg"]}, {"name": "무궁화", "category": "겨울나무", "images": ["assets/wtrees/무궁화.jpg"]}, {"name": "이나무", "category": "겨울나무", "images": ["assets/wtrees/이나무.jpg"]}, {"name": "위성류", "category": "겨울나무", "images": ["assets/wtrees/위성류.jpg"]}, {"name": "버드나무", "category": "겨울나무", "images": ["assets/wtrees/버드나무.jpg"]}, {"name": "수양버들", "category": "겨울나무", "images": ["assets/wtrees/수양버들.jpg"]}, {"name": "선버들", "category": "겨울나무", "images": ["assets/wtrees/선버들.jpg"]}, {"name": "갯버들", "category": "겨울나무", "images": ["assets/wtrees/갯버들.jpg"]}, {"name": "키버들", "category": "겨울나무", "images": ["assets/wtrees/키버들.jpg"]}, {"name": "왕버들", "category": "겨울나무", "images": ["assets/wtrees/왕버들.jpg"]}, {"name": "분버들", "category": "겨울나무", "images": ["assets/wtrees/분버들.jpg"]}, {"name": "쪽버들", "category": "겨울나무", "images": ["assets/wtrees/쪽버들.jpg"]}, {"name": "호랑버들", "category": "겨울나무", "images": ["assets/wtrees/호랑버들.jpg"]}, {"name": "여우버들", "category": "겨울나무", "images": ["assets/wtrees/여우버들.jpg"]}, {"name": "제주산버들", "category": "겨울나무", "images": ["assets/wtrees/제주산버들.jpg"]}, {"name": "황철나무", "category": "겨울나무", "images": ["assets/wtrees/황철나무.jpg"]}, {"name": "사시나무", "category": "겨울나무", "images": ["assets/wtrees/사시나무.jpg"]}, {"name": "은사시나무", "category": "겨울나무", "images": ["assets/wtrees/은사시나무.jpg"]}, {"name": "양버들", "category": "겨울나무", "images": ["assets/wtrees/양버들.jpg"]}, {"name": "이태리포풀러", "category": "겨울나무", "images": ["assets/wtrees/이태리포풀러.jpg"]}, {"name": "진달래", "category": "겨울나무", "images": ["assets/wtrees/진달래.jpg"]}, {"name": "철쭉", "category": "겨울나무", "images": ["assets/wtrees/철쭉.jpg"]}, {"name": "참꽃나무", "category": "겨울나무", "images": ["assets/wtrees/참꽃나무.jpg"]}, {"name": "산철쭉", "category": "겨울나무", "images": ["assets/wtrees/산철쭉.jpg"]}, {"name": "흰참곷", "category": "겨울나무", "images": ["assets/wtrees/흰참곷.jpg"]}, {"name": "산매자나무", "category": "겨울나무", "images": ["assets/wtrees/산매자나무.jpg"]}, {"name": "산앵도나무", "category": "겨울나무", "images": ["assets/wtrees/산앵도나무.jpg"]}, {"name": "정금나무", "category": "겨울나무", "images": ["assets/wtrees/정금나무.jpg"]}, {"name": "들쭉나무", "category": "겨울나무", "images": ["assets/wtrees/들쭉나무.jpg"]}, {"name": "고욤나무", "category": "겨울나무", "images": ["assets/wtrees/고욤나무.jpg"]}, {"name": "감나무", "category": "겨울나무", "images": ["assets/wtrees/감나무.jpg"]}, {"name": "때죽나무", "category": "겨울나무", "images": ["assets/wtrees/때죽나무.jpg"]}, {"name": "쪽동백나무", "category": "겨울나무", "images": ["assets/wtrees/쪽동백나무.jpg"]}, {"name": "노린재나무", "category": "겨울나무", "images": ["assets/wtrees/노린재나무.jpg"]}, {"name": "섬노린재", "category": "겨울나무", "images": ["assets/wtrees/섬노린재.jpg"]}, {"name": "검노린재", "category": "겨울나무", "images": ["assets/wtrees/검노린재.jpg"]}, {"name": "바위말발도리", "category": "겨울나무", "images": ["assets/wtrees/바위말발도리.jpg"]}, {"name": "매화말발도리", "category": "겨울나무", "images": ["assets/wtrees/매화말발도리.jpg"]}, {"name": "꼬리말발도리", "category": "겨울나무", "images": ["assets/wtrees/꼬리말발도리.jpg"]}, {"name": "물참대", "category": "겨울나무", "images": ["assets/wtrees/물참대.jpg"]}, {"name": "말발도리", "category": "겨울나무", "images": ["assets/wtrees/말발도리.jpg"]}, {"name": "산수국", "category": "겨울나무", "images": ["assets/wtrees/산수국.jpg"]}, {"name": "성널수국", "category": "겨울나무", "images": ["assets/wtrees/성널수국.jpg"]}, {"name": "등수국", "category": "겨울나무", "images": ["assets/wtrees/등수국.jpg"]}, {"name": "바위수국", "category": "겨울나무", "images": ["assets/wtrees/바위수국.jpg"]}, {"name": "얇은잎고광나무", "category": "겨울나무", "images": ["assets/wtrees/얇은잎고광나무.jpg"]}, {"name": "까마귀밥나무", "category": "겨울나무", "images": ["assets/wtrees/까마귀밥나무.jpg"]}, {"name": "까치밥나무", "category": "겨울나무", "images": ["assets/wtrees/까치밥나무.jpg"]}, {"name": "꼬리까치밥나무", "category": "겨울나무", "images": ["assets/wtrees/꼬리까치밥나무.jpg"]}, {"name": "명자순", "category": "겨울나무", "images": ["assets/wtrees/명자순.jpg"]}, {"name": "바늘까치밥나무", "category": "겨울나무", "images": ["assets/wtrees/바늘까치밥나무.jpg"]}, {"name": "조팝나무", "category": "겨울나무", "images": ["assets/wtrees/조팝나무.jpg"]}, {"name": "인가목조팝나무", "category": "겨울나무", "images": ["assets/wtrees/인가목조팝나무.jpg"]}, {"name": "갈기조팝나무", "category": "겨울나무", "images": ["assets/wtrees/갈기조팝나무.jpg"]}, {"name": "꼬리조팝나무", "category": "겨울나무", "images": ["assets/wtrees/꼬리조팝나무.jpg"]}, {"name": "참조팝나무", "category": "겨울나무", "images": ["assets/wtrees/참조팝나무.jpg"]}, {"name": "아구장나무", "category": "겨울나무", "images": ["assets/wtrees/아구장나무.jpg"]}, {"name": "당조팝나무", "category": "겨울나무", "images": ["assets/wtrees/당조팝나무.jpg"]}, {"name": "산조팝나무", "category": "겨울나무", "images": ["assets/wtrees/산조팝나무.jpg"]}, {"name": "산국수나무", "category": "겨울나무", "images": ["assets/wtrees/산국수나무.jpg"]}, {"name": "나도국수나무", "category": "겨울나무", "images": ["assets/wtrees/나도국수나무.jpg"]}, {"name": "국수나무", "category": "겨울나무", "images": ["assets/wtrees/국수나무.jpg"]}, {"name": "쉬땅나무", "category": "겨울나무", "images": ["assets/wtrees/쉬땅나무.jpg"]}, {"name": "좀쉬땅나무", "category": "겨울나무", "images": ["assets/wtrees/좀쉬땅나무.jpg"]}, {"name": "가침박달", "category": "겨울나무", "images": ["assets/wtrees/가침박달.jpg"]}, {"name": "병아리꽃나무", "category": "겨울나무", "images": ["assets/wtrees/병아리꽃나무.jpg"]}, {"name": "황매화", "category": "겨울나무", "images": ["assets/wtrees/황매화.jpg"]}, {"name": "물싸리", "category": "겨울나무", "images": ["assets/wtrees/물싸리.jpg"]}, {"name": "산딸기", "category": "겨울나무", "images": ["assets/wtrees/산딸기.jpg"]}, {"name": "거문딸기", "category": "겨울나무", "images": ["assets/wtrees/거문딸기.jpg"]}, {"name": "서양산딸기", "category": "겨울나무", "images": ["assets/wtrees/서양산딸기.jpg"]}, {"name": "복분자딸기", "category": "겨울나무", "images": ["assets/wtrees/복분자딸기.jpg"]}, {"name": "줄딸기", "category": "겨울나무", "images": ["assets/wtrees/줄딸기.jpg"]}, {"name": "찔레나무", "category": "겨울나무", "images": ["assets/wtrees/찔레나무.jpg"]}, {"name": "용가시나무", "category": "겨울나무", "images": ["assets/wtrees/용가시나무.jpg"]}, {"name": "돌가시나무", "category": "겨울나무", "images": ["assets/wtrees/돌가시나무.jpg"]}, {"name": "해당화", "category": "겨울나무", "images": ["assets/wtrees/해당화.jpg"]}, {"name": "생열귀나무", "category": "겨울나무", "images": ["assets/wtrees/생열귀나무.jpg"]}, {"name": "인가목", "category": "겨울나무", "images": ["assets/wtrees/인가목.jpg"]}, {"name": "흰인가목", "category": "겨울나무", "images": ["assets/wtrees/흰인가목.jpg"]}, {"name": "둥근인가목", "category": "겨울나무", "images": ["assets/wtrees/둥근인가목.jpg"]}, {"name": "귀룽나무", "category": "겨울나무", "images": ["assets/wtrees/귀룽나무.jpg"]}, {"name": "섬개벚나무", "category": "겨울나무", "images": ["assets/wtrees/섬개벚나무.jpg"]}, {"name": "개벚지나무", "category": "겨울나무", "images": ["assets/wtrees/개벚지나무.jpg"]}, {"name": "산개벚지나무", "category": "겨울나무", "images": ["assets/wtrees/산개벚지나무.jpg"]}, {"name": "벚나무", "category": "겨울나무", "images": ["assets/wtrees/벚나무.jpg"]}, {"name": "올벚나무", "category": "겨울나무", "images": ["assets/wtrees/올벚나무.jpg"]}, {"name": "왕벚나무", "category": "겨울나무", "images": ["assets/wtrees/왕벚나무.jpg"]}, {"name": "앵도나무", "category": "겨울나무", "images": ["assets/wtrees/앵도나무.jpg"]}, {"name": "복사앵도", "category": "겨울나무", "images": ["assets/wtrees/복사앵도.jpg"]}, {"name": "이스라지", "category": "겨울나무", "images": ["assets/wtrees/이스라지.jpg"]}, {"name": "산옥매", "category": "겨울나무", "images": ["assets/wtrees/산옥매.jpg"]}, {"name": "자도나무", "category": "겨울나무", "images": ["assets/wtrees/자도나무.jpg"]}, {"name": "복사나무", "category": "겨울나무", "images": ["assets/wtrees/복사나무.jpg"]}, {"name": "매실나무", "category": "겨울나무", "images": ["assets/wtrees/매실나무.jpg"]}, {"name": "살구나무", "category": "겨울나무", "images": ["assets/wtrees/살구나무.jpg"]}, {"name": "개살구나무", "category": "겨울나무", "images": ["assets/wtrees/개살구나무.jpg"]}, {"name": "시베리아살구나무", "category": "겨울나무", "images": ["assets/wtrees/시베리아살구나무.jpg"]}, {"name": "개야광나무", "category": "겨울나무", "images": ["assets/wtrees/개야광나무.jpg"]}, {"name": "산사나무", "category": "겨울나무", "images": ["assets/wtrees/산사나무.jpg"]}, {"name": "윤노리나무", "category": "겨울나무", "images": ["assets/wtrees/윤노리나무.jpg"]}, {"name": "마가목", "category": "겨울나무", "images": ["assets/wtrees/마가목.jpg"]}, {"name": "팥배나무", "category": "겨울나무", "images": ["assets/wtrees/팥배나무.jpg"]}, {"name": "명자나무", "category": "겨울나무", "images": ["assets/wtrees/명자나무.jpg"]}, {"name": "모과나무", "category": "겨울나무", "images": ["assets/wtrees/모과나무.jpg"]}, {"name": "돌배나무", "category": "겨울나무", "images": ["assets/wtrees/돌배나무.jpg"]}, {"name": "산돌배나무", "category": "겨울나무", "images": ["assets/wtrees/산돌배나무.jpg"]}, {"name": "콩배나무", "category": "겨울나무", "images": ["assets/wtrees/콩배나무.jpg"]}, {"name": "야광나무", "category": "겨울나무", "images": ["assets/wtrees/야광나무.jpg"]}, {"name": "아그배나무", "category": "겨울나무", "images": ["assets/wtrees/아그배나무.jpg"]}, {"name": "이노리나무", "category": "겨울나무", "images": ["assets/wtrees/이노리나무.jpg"]}, {"name": "채진목", "category": "겨울나무", "images": ["assets/wtrees/채진목.jpg"]}, {"name": "자귀나무", "category": "겨울나무", "images": ["assets/wtrees/자귀나무.jpg"]}, {"name": "박태기나무", "category": "겨울나무", "images": ["assets/wtrees/박태기나무.jpg"]}, {"name": "실거리나무", "category": "겨울나무", "images": ["assets/wtrees/실거리나무.jpg"]}, {"name": "주엽나무", "category": "겨울나무", "images": ["assets/wtrees/주엽나무.jpg"]}, {"name": "조각자나무", "category": "겨울나무", "images": ["assets/wtrees/조각자나무.jpg"]}, {"name": "다릅나무", "category": "겨울나무", "images": ["assets/wtrees/다릅나무.jpg"]}, {"name": "솔비나무", "category": "겨울나무", "images": ["assets/wtrees/솔비나무.jpg"]}, {"name": "회화나무", "category": "겨울나무", "images": ["assets/wtrees/회화나무.jpg"]}, {"name": "개느삼", "category": "겨울나무", "images": ["assets/wtrees/개느삼.jpg"]}, {"name": "골담초", "category": "겨울나무", "images": ["assets/wtrees/골담초.jpg"]}, {"name": "참골담초", "category": "겨울나무", "images": ["assets/wtrees/참골담초.jpg"]}, {"name": "족제비싸리", "category": "겨울나무", "images": ["assets/wtrees/족제비싸리.jpg"]}, {"name": "칡", "category": "겨울나무", "images": ["assets/wtrees/칡.jpg"]}, {"name": "낭아초", "category": "겨울나무", "images": ["assets/wtrees/낭아초.jpg"]}, {"name": "땅비싸리", "category": "겨울나무", "images": ["assets/wtrees/땅비싸리.jpg"]}, {"name": "된장풀", "category": "겨울나무", "images": ["assets/wtrees/된장풀.jpg"]}, {"name": "싸리", "category": "겨울나무", "images": ["assets/wtrees/싸리.jpg"]}, {"name": "참싸리", "category": "겨울나무", "images": ["assets/wtrees/참싸리.jpg"]}, {"name": "조록싸리", "category": "겨울나무", "images": ["assets/wtrees/조록싸리.jpg"]}, {"name": "해변싸리", "category": "겨울나무", "images": ["assets/wtrees/해변싸리.jpg"]}, {"name": "삼색싸리", "category": "겨울나무", "images": ["assets/wtrees/삼색싸리.jpg"]}, {"name": "아까시나무", "category": "겨울나무", "images": ["assets/wtrees/아까시나무.jpg"]}, {"name": "등", "category": "겨울나무", "images": ["assets/wtrees/등.jpg"]}, {"name": "애기등", "category": "겨울나무", "images": ["assets/wtrees/애기등.jpg"]}, {"name": "보리수나무", "category": "겨울나무", "images": ["assets/wtrees/보리수나무.jpg"]}, {"name": "뜰보리수", "category": "겨울나무", "images": ["assets/wtrees/뜰보리수.jpg"]}, {"name": "배롱나무", "category": "겨울나무", "images": ["assets/wtrees/배롱나무.jpg"]}, {"name": "두메닥나무", "category": "겨울나무", "images": ["assets/wtrees/두메닥나무.jpg"]}, {"name": "팥꽃나무", "category": "겨울나무", "images": ["assets/wtrees/팥꽃나무.jpg"]}, {"name": "산닥나무", "category": "겨울나무", "images": ["assets/wtrees/산닥나무.jpg"]}, {"name": "거문도닥나무", "category": "겨울나무", "images": ["assets/wtrees/거문도닥나무.jpg"]}, {"name": "삼지닥나무", "category": "겨울나무", "images": ["assets/wtrees/삼지닥나무.jpg"]}, {"name": "박쥐나무", "category": "겨울나무", "images": ["assets/wtrees/박쥐나무.jpg"]}, {"name": "층층나무", "category": "겨울나무", "images": ["assets/wtrees/층층나무.jpg"]}, {"name": "흰말채나무", "category": "겨울나무", "images": ["assets/wtrees/흰말채나무.jpg"]}, {"name": "곰의말채나무", "category": "겨울나무", "images": ["assets/wtrees/곰의말채나무.jpg"]}, {"name": "말채나무", "category": "겨울나무", "images": ["assets/wtrees/말채나무.jpg"]}, {"name": "산수유나무", "category": "겨울나무", "images": ["assets/wtrees/산수유나무.jpg"]}, {"name": "산딸나무", "category": "겨울나무", "images": ["assets/wtrees/산딸나무.jpg"]}, {"name": "꽃산딸나무", "category": "겨울나무", "images": ["assets/wtrees/꽃산딸나무.jpg"]}, {"name": "꼬리겨우살이", "category": "겨울나무", "images": ["assets/wtrees/꼬리겨우살이.jpg"]}, {"name": "화살나무", "category": "겨울나무", "images": ["assets/wtrees/화살나무.jpg"]}, {"name": "참빗살나무", "category": "겨울나무", "images": ["assets/wtrees/참빗살나무.jpg"]}, {"name": "좀참빗살나무", "category": "겨울나무", "images": ["assets/wtrees/좀참빗살나무.jpg"]}, {"name": "참회나무", "category": "겨울나무", "images": ["assets/wtrees/참회나무.jpg"]}, {"name": "회나무", "category": "겨울나무", "images": ["assets/wtrees/회나무.jpg"]}, {"name": "나래회나무", "category": "겨울나무", "images": ["assets/wtrees/나래회나무.jpg"]}, {"name": "회목나무", "category": "겨울나무", "images": ["assets/wtrees/회목나무.jpg"]}, {"name": "푼지나무", "category": "겨울나무", "images": ["assets/wtrees/푼지나무.jpg"]}, {"name": "노박덩굴", "category": "겨울나무", "images": ["assets/wtrees/노박덩굴.jpg"]}, {"name": "털노박덩굴", "category": "겨울나무", "images": ["assets/wtrees/털노박덩굴.jpg"]}, {"name": "미역줄나무", "category": "겨울나무", "images": ["assets/wtrees/미역줄나무.jpg"]}, {"name": "대팻집나무", "category": "겨울나무", "images": ["assets/wtrees/대팻집나무.jpg"]}, {"name": "낙상홍", "category": "겨울나무", "images": ["assets/wtrees/낙상홍.jpg"]}, {"name": "미국낙상홍", "category": "겨울나무", "images": ["assets/wtrees/미국낙상홍.jpg"]}, {"name": "예덕나무", "category": "겨울나무", "images": ["assets/wtrees/예덕나무.jpg"]}, {"name": "광대싸리", "category": "겨울나무", "images": ["assets/wtrees/광대싸리.jpg"]}, {"name": "오구나무", "category": "겨울나무", "images": ["assets/wtrees/오구나무.jpg"]}, {"name": "사람주나무", "category": "겨울나무", "images": ["assets/wtrees/사람주나무.jpg"]}, {"name": "조도만두나무", "category": "겨울나무", "images": ["assets/wtrees/조도만두나무.jpg"]}, {"name": "묏대추나무", "category": "겨울나무", "images": ["assets/wtrees/묏대추나무.jpg"]}, {"name": "갯대추나무", "category": "겨울나무", "images": ["assets/wtrees/갯대추나무.jpg"]}, {"name": "헛개나무", "category": "겨울나무", "images": ["assets/wtrees/헛개나무.jpg"]}, {"name": "상동나무", "category": "겨울나무", "images": ["assets/wtrees/상동나무.jpg"]}, {"name": "까마귀베개", "category": "겨울나무", "images": ["assets/wtrees/까마귀베개.jpg"]}, {"name": "망개나무", "category": "겨울나무", "images": ["assets/wtrees/망개나무.jpg"]}, {"name": "먹넌출", "category": "겨울나무", "images": ["assets/wtrees/먹넌출.jpg"]}, {"name": "산황나무", "category": "겨울나무", "images": ["assets/wtrees/산황나무.jpg"]}, {"name": "갈매나무", "category": "겨울나무", "images": ["assets/wtrees/갈매나무.jpg"]}, {"name": "참갈매나무", "category": "겨울나무", "images": ["assets/wtrees/참갈매나무.jpg"]}, {"name": "짝자래나무", "category": "겨울나무", "images": ["assets/wtrees/짝자래나무.jpg"]}, {"name": "돌갈매나무", "category": "겨울나무", "images": ["assets/wtrees/돌갈매나무.jpg"]}, {"name": "좀갈매나무", "category": "겨울나무", "images": ["assets/wtrees/좀갈매나무.jpg"]}, {"name": "왕머루", "category": "겨울나무", "images": ["assets/wtrees/왕머루.jpg"]}, {"name": "담쟁이덩굴", "category": "겨울나무", "images": ["assets/wtrees/담쟁이덩굴.jpg"]}, {"name": "말오줌때", "category": "겨울나무", "images": ["assets/wtrees/말오줌때.jpg"]}, {"name": "고추나무", "category": "겨울나무", "images": ["assets/wtrees/고추나무.jpg"]}, {"name": "무환자나무", "category": "겨울나무", "images": ["assets/wtrees/무환자나무.jpg"]}, {"name": "모감주나무", "category": "겨울나무", "images": ["assets/wtrees/모감주나무.jpg"]}, {"name": "칠엽수", "category": "겨울나무", "images": ["assets/wtrees/칠엽수.jpg"]}, {"name": "가시칠엽수", "category": "겨울나무", "images": ["assets/wtrees/가시칠엽수.jpg"]}, {"name": "단풍나무", "category": "겨울나무", "images": ["assets/wtrees/단풍나무.jpg"]}, {"name": "당단풍나무", "category": "겨울나무", "images": ["assets/wtrees/당단풍나무.jpg"]}, {"name": "고로쇠나무", "category": "겨울나무", "images": ["assets/wtrees/고로쇠나무.jpg"]}, {"name": "부게꽃나무", "category": "겨울나무", "images": ["assets/wtrees/부게꽃나무.jpg"]}, {"name": "산겨릅나무", "category": "겨울나무", "images": ["assets/wtrees/산겨릅나무.jpg"]}, {"name": "시닥나무", "category": "겨울나무", "images": ["assets/wtrees/시닥나무.jpg"]}, {"name": "청시닥나무", "category": "겨울나무", "images": ["assets/wtrees/청시닥나무.jpg"]}, {"name": "복자기", "category": "겨울나무", "images": ["assets/wtrees/복자기.jpg"]}, {"name": "복장나무", "category": "겨울나무", "images": ["assets/wtrees/복장나무.jpg"]}, {"name": "네군도단풍", "category": "겨울나무", "images": ["assets/wtrees/네군도단풍.jpg"]}, {"name": "신나무", "category": "겨울나무", "images": ["assets/wtrees/신나무.jpg"]}, {"name": "중국단풍", "category": "겨울나무", "images": ["assets/wtrees/중국단풍.jpg"]}, {"name": "은단풍나무", "category": "겨울나무", "images": ["assets/wtrees/은단풍나무.jpg"]}, {"name": "붉나무", "category": "겨울나무", "images": ["assets/wtrees/붉나무.jpg"]}, {"name": "개옻나무", "category": "겨울나무", "images": ["assets/wtrees/개옻나무.jpg"]}, {"name": "산검양옻나무", "category": "겨울나무", "images": ["assets/wtrees/산검양옻나무.jpg"]}, {"name": "검양옻나무", "category": "겨울나무", "images": ["assets/wtrees/검양옻나무.jpg"]}, {"name": "옻나무", "category": "겨울나무", "images": ["assets/wtrees/옻나무.jpg"]}, {"name": "소태나무", "category": "겨울나무", "images": ["assets/wtrees/소태나무.jpg"]}, {"name": "가죽나무", "category": "겨울나무", "images": ["assets/wtrees/가죽나무.jpg"]}, {"name": "멀구슬나무", "category": "겨울나무", "images": ["assets/wtrees/멀구슬나무.jpg"]}, {"name": "참죽나무", "category": "겨울나무", "images": ["assets/wtrees/참죽나무.jpg"]}, {"name": "산초나무", "category": "겨울나무", "images": ["assets/wtrees/산초나무.jpg"]}, {"name": "초피나무", "category": "겨울나무", "images": ["assets/wtrees/초피나무.jpg"]}, {"name": "왕초피나무", "category": "겨울나무", "images": ["assets/wtrees/왕초피나무.jpg"]}, {"name": "머귀나무", "category": "겨울나무", "images": ["assets/wtrees/머귀나무.jpg"]}, {"name": "황벽나무", "category": "겨울나무", "images": ["assets/wtrees/황벽나무.jpg"]}, {"name": "쉬나무", "category": "겨울나무", "images": ["assets/wtrees/쉬나무.jpg"]}, {"name": "탱자나무", "category": "겨울나무", "images": ["assets/wtrees/탱자나무.jpg"]}, {"name": "상산", "category": "겨울나무", "images": ["assets/wtrees/상산.jpg"]}, {"name": "음나무", "category": "겨울나무", "images": ["assets/wtrees/음나무.jpg"]}, {"name": "오갈피나무", "category": "겨울나무", "images": ["assets/wtrees/오갈피나무.jpg"]}, {"name": "섬오갈피나무", "category": "겨울나무", "images": ["assets/wtrees/섬오갈피나무.jpg"]}, {"name": "오가나무", "category": "겨울나무", "images": ["assets/wtrees/오가나무.jpg"]}, {"name": "두릅나무", "category": "겨울나무", "images": ["assets/wtrees/두릅나무.jpg"]}, {"name": "송양나무", "category": "겨울나무", "images": ["assets/wtrees/송양나무.jpg"]}, {"name": "층꽃나무", "category": "겨울나무", "images": ["assets/wtrees/층꽃나무.jpg"]}, {"name": "작살나무", "category": "겨울나무", "images": ["assets/wtrees/작살나무.jpg"]}, {"name": "좀작살나무", "category": "겨울나무", "images": ["assets/wtrees/좀작살나무.jpg"]}, {"name": "새비나무", "category": "겨울나무", "images": ["assets/wtrees/새비나무.jpg"]}, {"name": "누리장나무", "category": "겨울나무", "images": ["assets/wtrees/누리장나무.jpg"]}, {"name": "순비기나무", "category": "겨울나무", "images": ["assets/wtrees/순비기나무.jpg"]}, {"name": "좀목형", "category": "겨울나무", "images": ["assets/wtrees/좀목형.jpg"]}, {"name": "백리향", "category": "겨울나무", "images": ["assets/wtrees/백리향.jpg"]}, {"name": "개나리", "category": "겨울나무", "images": ["assets/wtrees/개나리.jpg"]}, {"name": "만리화", "category": "겨울나무", "images": ["assets/wtrees/만리화.jpg"]}, {"name": "미선나무", "category": "겨울나무", "images": ["assets/wtrees/미선나무.jpg"]}, {"name": "개회나무", "category": "겨울나무", "images": ["assets/wtrees/개회나무.jpg"]}, {"name": "버들개회나무", "category": "겨울나무", "images": ["assets/wtrees/버들개회나무.jpg"]}, {"name": "털개회나무", "category": "겨울나무", "images": ["assets/wtrees/털개회나무.jpg"]}, {"name": "꽃개회나무", "category": "겨울나무", "images": ["assets/wtrees/꽃개회나무.jpg"]}, {"name": "쇠물푸레나무", "category": "겨울나무", "images": ["assets/wtrees/쇠물푸레나무.jpg"]}, {"name": "물푸레나무", "category": "겨울나무", "images": ["assets/wtrees/물푸레나무.jpg"]}, {"name": "들메나무", "category": "겨울나무", "images": ["assets/wtrees/들메나무.jpg"]}, {"name": "물들메나무", "category": "겨울나무", "images": ["assets/wtrees/물들메나무.jpg"]}, {"name": "이팝나무", "category": "겨울나무", "images": ["assets/wtrees/이팝나무.jpg"]}, {"name": "쥐똥나무", "category": "겨울나무", "images": ["assets/wtrees/쥐똥나무.jpg"]}, {"name": "왕쥐똥나무", "category": "겨울나무", "images": ["assets/wtrees/왕쥐똥나무.jpg"]}, {"name": "상동잎쥐똥나무", "category": "겨울나무", "images": ["assets/wtrees/상동잎쥐똥나무.jpg"]}, {"name": "참오동나무", "category": "겨울나무", "images": ["assets/wtrees/참오동나무.jpg"]}, {"name": "개오동", "category": "겨울나무", "images": ["assets/wtrees/개오동.jpg"]}, {"name": "꽃개오동", "category": "겨울나무", "images": ["assets/wtrees/꽃개오동.jpg"]}, {"name": "능소화", "category": "겨울나무", "images": ["assets/wtrees/능소화.jpg"]}, {"name": "구슬꽃나무", "category": "겨울나무", "images": ["assets/wtrees/구슬꽃나무.jpg"]}, {"name": "계요등", "category": "겨울나무", "images": ["assets/wtrees/계요등.jpg"]}, {"name": "댕강나무", "category": "겨울나무", "images": ["assets/wtrees/댕강나무.jpg"]}, {"name": "털댕강나무", "category": "겨울나무", "images": ["assets/wtrees/털댕강나무.jpg"]}, {"name": "주걱댕강나무", "category": "겨울나무", "images": ["assets/wtrees/주걱댕강나무.jpg"]}, {"name": "병꽃나무", "category": "겨울나무", "images": ["assets/wtrees/병꽃나무.jpg"]}, {"name": "붉은병꽃나무", "category": "겨울나무", "images": ["assets/wtrees/붉은병꽃나무.jpg"]}, {"name": "일본병꽃나무", "category": "겨울나무", "images": ["assets/wtrees/일본병꽃나무.jpg"]}, {"name": "인동덩굴", "category": "겨울나무", "images": ["assets/wtrees/인동덩굴.jpg"]}, {"name": "괴불나무", "category": "겨울나무", "images": ["assets/wtrees/괴불나무.jpg"]}, {"name": "올괴불나무", "category": "겨울나무", "images": ["assets/wtrees/올괴불나무.jpg"]}, {"name": "길마가지나무", "category": "겨울나무", "images": ["assets/wtrees/길마가지나무.jpg"]}, {"name": "구슬댕댕이", "category": "겨울나무", "images": ["assets/wtrees/구슬댕댕이.jpg"]}, {"name": "댕댕이나무", "category": "겨울나무", "images": ["assets/wtrees/댕댕이나무.jpg"]}, {"name": "왕과불나무", "category": "겨울나무", "images": ["assets/wtrees/왕과불나무.jpg"]}, {"name": "청괴불나무", "category": "겨울나무", "images": ["assets/wtrees/청괴불나무.jpg"]}, {"name": "각시괴불나무", "category": "겨울나무", "images": ["assets/wtrees/각시괴불나무.jpg"]}, {"name": "홍괴불나무", "category": "겨울나무", "images": ["assets/wtrees/홍괴불나무.jpg"]}, {"name": "흰괴불나무", "category": "겨울나무", "images": ["assets/wtrees/흰괴불나무.jpg"]}, {"name": "덜꿩나무", "category": "겨울나무", "images": ["assets/wtrees/덜꿩나무.jpg"]}, {"name": "가막살나무", "category": "겨울나무", "images": ["assets/wtrees/가막살나무.jpg"]}, {"name": "산가막살나무", "category": "겨울나무", "images": ["assets/wtrees/산가막살나무.jpg"]}, {"name": "배암나무", "category": "겨울나무", "images": ["assets/wtrees/배암나무.jpg"]}, {"name": "백당나무", "category": "겨울나무", "images": ["assets/wtrees/백당나무.jpg"]}, {"name": "분단나무", "category": "겨울나무", "images": ["assets/wtrees/분단나무.jpg"]}, {"name": "분꽃나무", "category": "겨울나무", "images": ["assets/wtrees/분꽃나무.jpg"]}, {"name": "산분꽃나무", "category": "겨울나무", "images": ["assets/wtrees/산분꽃나무.jpg"]}, {"name": "딱총나무", "category": "겨울나무", "images": ["assets/wtrees/딱총나무.jpg"]}, {"name": "더위지기", "category": "겨울나무", "images": ["assets/wtrees/더위지기.jpg"]}, {"name": "청미래덩굴", "category": "겨울나무", "images": ["assets/wtrees/청미래덩굴.jpg"]}, {"name": "청가시덩굴", "category": "겨울나무", "images": ["assets/wtrees/청가시덩굴.jpg"]}];
+
+        // Modal and Zoom Logic
+        const grid = document.getElementById('grid');
+        const modal = document.getElementById('modal');
+        const searchInput = document.getElementById('search');
+        const imgWrapper = document.getElementById('img-wrapper');
+        const zoomOverlay = document.getElementById('zoom-overlay');
+        const zoomedImg = document.getElementById('zoomed-img');
+        const closeBtn = document.getElementById('close-modal');
+        const modalBadge = document.getElementById('modal-badge');
+        const modalContent = document.querySelector('.modal-content');
+
+        let zoomStage = 0; // 0: Normal, 1: Fullscreen (No UI), 2: Max Zoom
+        let currentScale = 1;
+        let startDist = 0;
+        let translateX = 0;
+        let translateY = 0;
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
+        let dragMoved = false;
+        let evCache = [];
+
+        function renderGrid(data) {
+            grid.innerHTML = data.map(item => `
+                <div class="card" onclick='openModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+                    <div class="card-img-wrapper">
+                        <img src="${item.images[0]}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="card-content">
+                        <div class="card-title">${item.name}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal(item) {
+            document.getElementById('modal-img').src = item.images[0];
+            zoomedImg.src = item.images[0];
+            modalBadge.textContent = item.category;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            zoomStage = 0;
+            currentScale = 1;
+            updateZoomStage();
+        }
+
+        function updateZoomStage() {
+            if (zoomStage === 0) {
+                closeBtn.style.opacity = '1';
+                closeBtn.style.pointerEvents = 'auto';
+                modalBadge.style.opacity = '0'; // Hidden on initial view (zoomStage 0)
+                zoomOverlay.classList.remove('active');
+                modalContent.style.width = '90%';
+                modalContent.style.height = '90vh';
+                modalContent.style.maxWidth = '1200px';
+                modalContent.style.borderRadius = '30px';
+            } else if (zoomStage === 1) {
+                closeBtn.style.opacity = '0';
+                closeBtn.style.pointerEvents = 'none';
+                modalBadge.style.opacity = '0';
+                zoomOverlay.classList.remove('active');
+                modalContent.style.width = '100%';
+                modalContent.style.height = '100vh';
+                modalContent.style.maxWidth = 'none';
+                modalContent.style.borderRadius = '0';
+            } else if (zoomStage === 2) {
+                zoomOverlay.classList.add('active');
+                currentScale = 2.5;
+                translateX = 0;
+                translateY = 0;
+                zoomedImg.style.transform = `translate(0, 0) scale(${currentScale})`;
+            }
+        }
+
+        imgWrapper.onclick = (e) => {
+            if (zoomStage === 2) return; // Handled by zoomOverlay
+            e.stopPropagation();
+            zoomStage = (zoomStage + 1) % 3;
+            updateZoomStage();
+        };
+
+        zoomOverlay.onclick = (e) => {
+            e.stopPropagation();
+            if (!dragMoved) {
+                zoomStage = 0;
+                updateZoomStage();
+            }
+        };
+
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        };
+
+        zoomOverlay.onpointerdown = (e) => {
+            if (zoomStage !== 2) return;
+            evCache.push(e);
+            if (evCache.length === 1) {
+                isPanning = true;
+                dragMoved = false;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            }
+            zoomOverlay.setPointerCapture(e.pointerId);
+        };
+
+        zoomOverlay.onpointermove = (e) => {
+            if (zoomStage !== 2) return;
+            const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
+            if (index > -1) evCache[index] = e;
+
+            if (evCache.length === 2) {
+                isPanning = false;
+                const curDist = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+                if (startDist > 0) {
+                    const scaleFactor = curDist / startDist;
+                    currentScale = Math.min(Math.max(currentScale * scaleFactor, 1), 5);
+                    dragMoved = true;
+                }
+                startDist = curDist;
+            } else if (evCache.length === 1 && isPanning) {
+                const dx = e.clientX - (startX + translateX);
+                const dy = e.clientY - (startY + translateY);
+                if (Math.hypot(dx, dy) > 5) dragMoved = true;
+                
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+            }
+            
+            zoomedImg.style.transition = 'none';
+            zoomedImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        };
+
+        zoomOverlay.onpointerup = zoomOverlay.onpointerout = zoomOverlay.onpointercancel = (e) => {
+            evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
+            if (evCache.length < 2) startDist = 0;
+            if (evCache.length === 0) {
+                isPanning = false;
+                zoomedImg.style.transition = 'transform 0.3s ease-out';
+            }
+            zoomOverlay.releasePointerCapture(e.pointerId);
+        };
+
+        zoomOverlay.onwheel = (e) => {
+            if (zoomStage !== 2) return;
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            currentScale = Math.min(Math.max(currentScale * delta, 1), 10);
+            zoomedImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+        };
+
+        searchInput.oninput = (e) => {
+            const term = e.target.value.trim().toLowerCase();
+            const filtered = speciesData.filter(t => t.name.toLowerCase().includes(term));
+            renderGrid(filtered);
+        };
+
+        document.getElementById('flower-btn').onclick = () => {
+            const term = '겨울나무';
+            const filtered = speciesData.filter(t => t.category.includes(term));
+            renderGrid(filtered);
+        };
+
+        // Initialize
+        renderGrid(speciesData);
+    </script>
+</body>
+</html>
